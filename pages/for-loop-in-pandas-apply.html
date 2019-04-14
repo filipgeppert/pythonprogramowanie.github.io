@@ -1,0 +1,240 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="" />
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" href="/theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="/theme/font-awesome/css/solid.css">
+
+    <link href="/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+
+
+
+    <meta name="author" content="Filip Geppert" />
+    <meta name="description" content="" />
+<meta property="og:site_name" content="Pythonprogramowanie"/>
+<meta property="og:type" content="blog"/>
+<meta property="og:title" content="Pythonprogramowanie"/>
+<meta property="og:description" content=""/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content=""/>
+
+  <title>Pythonprogramowanie &ndash; Apply</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="">
+        <img src="/theme/img/profile.png" alt="" title="">
+      </a>
+      <h1><a href=""></a></h1>
+
+
+      <nav>
+        <ul class="list">
+          <li><a href="/pages/for-loop-in-pandas-apply.html#for-loop-in-pandas-apply">Apply</a></li>
+
+          <li><a href="#" target="_blank">About me</a></li>
+          <li><a href="#" target="_blank">My projects</a></li>
+          <li><a href="#" target="_blank">Try my e-Book</a></li>
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-twitter" href="https://twitter.com/filipgepper" target="_blank">
+            <i class="fab fa-twitter">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-github" href="https://github.com/filipgeppert" target="_blank">
+            <i class="fab fa-github">
+            </i>
+          </a></li>
+          <li>
+            <a  class="sc-facebook" href="https://facebook.com/filipgeppert" target="_blank">
+            <i class="fab fa-facebook">
+            </i>
+          </a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="">Home</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/cv.html">Author</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+    
+    <h1 id="for-loop-in-pandas-apply">Apply</h1>
+  </header>
+  <div>
+<p>A wise man once said:</p>
+<p>If you use for loop in Pandas, something smells fishy.</p>
+<p>Why?! It works and my output is exactly like I wanted it to be! - you might think. In this article I will show you why a wise man is right.</p>
+<hr>
+<h2>How does .iterrows() work?</h2>
+<p>If you ever iterated over rows, which is the the most popular use case of for loop in Pandas,
+there is a huge chance that you used this construction:</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+    <span class="c1"># Access any cell in row and set it to 0</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;column_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+
+
+<p>It's very convenient, because one line of code gives you both access to index of the DataFrame and to all values in the row.
+However, what if we wanted to assign a particular value only for a given condition? Probably, we would write something like this:</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+    <span class="c1"># Access any cell in row and set it to 0</span>
+    <span class="c1"># Check if value in cell fulfils condition</span>
+    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;column_name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;column_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+</pre></div>
+
+
+<p>It's still possible. So one would say that why should we care about .apply() if we can do everything using for loops? Let's see how long does it take to execute each of those cells.
+To do that, we will use pre-generated dataset with daily prices of real estates.
+DataFrame contains 3 columns: date, price per day, and price per night. Source code and input dataset can be downloaded <a href="https://github.com/filipgeppert/pandas_apply">here</a>.</p>
+<div class="highlight"><pre><span></span>df.head()
+
++---+------------+-----------+-------------+
+|   |    date    | price_day | price_night |
++---+------------+-----------+-------------+
+| 0 | 2018-11-06 |      60.0 |        54.0 |
+| 1 | 2018-11-05 |      60.0 |        54.0 |
+| 2 | 2018-11-04 |      60.0 |        54.0 |
+| 3 | 2018-11-03 |      60.0 |        54.0 |
+| 4 | 2018-11-02 |      65.0 |        58.5 |
++---+------------+-----------+-------------+
+</pre></div>
+
+
+<p>This DataFrame has 4000 rows, so it is neither big nor small. Let's see how <code>.iterrows()</code> performs on the following DataFrame in terms of time execution:</p>
+<div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">time</span>
+<span class="c1"># Create new column and assign default value to it</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="c1"># Use of iterrows, almost always not preferable! </span>
+<span class="c1"># Always try to use .apply instead!</span>
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">index</span><span class="p">,</span><span class="s1">&#39;date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">month</span>
+</pre></div>
+
+
+<p>We created new column 'month' and we assign np.nan as its initial value.
+We iterated over rows, which means that we went over all rows in DataFrame on by one.
+With the use of <code>.loc[]</code>, we extracted month for every date value from a particular row and we assigned it to df['month'] column.</p>
+<p>We achieved a desired result in 1.92 seconds, so we can say that this application has an order of magnitude of seconds. Now let's see how you can decrease this time by 3 orders of magnitude!</p>
+<hr>
+<h2>Use of .apply()</h2>
+<p><code>.apply()</code> is a Pandas way to perform iterations on columns/rows. It takes advantage of vectorized techniques and speeds up execution of simple and complex operations by many times. Moreover, its syntax is easy to understand once you see a few examples. More detailed explanation on apply (how it works under the hood) in this excellent post <a href="https://stackoverflow.com/questions/54028199/for-loops-with-pandas-when-should-i-care/54028200#54028200">here</a>. Now, let's go back to our dataset and see its implementation. The same operation done with the use of .apply():</p>
+<div class="highlight"><pre><span></span><span class="c">%%time</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&#39;month&#39;</span><span class="p">]</span> <span class="p">=</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;date&#39;</span><span class="p">].</span><span class="n">apply</span><span class="p">(</span><span class="n">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">.</span><span class="n">month</span><span class="p">)</span>
+</pre></div>
+
+
+<p>We created a new column named "month".
+We called <code>.apply</code> on date column and we used lambda function that returns month from datetime.</p>
+<p>Time execution on the same data set: 8 ms. It's way faster and it will always be as long as you use it right. This is how .apply structure looks like:
+Following official Pandas documentation <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.apply.html">here</a>:
+"Apply a function along an axis of the DataFrame."</p>
+<p>As we know, axis can be either rows or columns and you control this with the use of axis parameter. What is important to remember is that the function that you apply should usually return a single value in order to work correctly.
+We can rewrite the previous example to be more verbose:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">extract_month</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">month</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">month</span>
+    <span class="k">return</span> <span class="n">month</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">extract_month</span><span class="p">)</span>
+</pre></div>
+
+
+<p>We created a function that returns exactly one value (month).
+We passed this function as a parameter to <code>.apply</code> to use on each column.</p>
+<hr>
+<p><code>.apply()</code> with condition</p>
+<p>I am sure that you immediately start seeing advantages of the previous approach. Inside the function that you pass to .apply you can do literally anything as long as you return a single value. Let's check how we can apply any condition.</p>
+<div class="highlight"><pre><span></span><span class="c1"># Create function that checks multiple conditions </span>
+<span class="k">def</span> <span class="nf">extract_month</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">month</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">month</span>
+    <span class="k">if</span> <span class="n">month</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;It&#39;s november. So cold!&quot;</span>
+    <span class="k">elif</span> <span class="n">month</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;It&#39;s june. I love sun!&quot;</span>
+    <span class="k">else</span><span class="p">:</span> 
+        <span class="k">return</span> <span class="s2">&quot;It&#39;s ok.&quot;</span>
+<span class="c1"># Apply function on column</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">extract_month</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Easy, clear and first-of-all very, very fast.</p>
+<hr>
+<h2>.apply() on multiple cells in row</h2>
+<p>Probably you waited for this part. You don't have to limit yourself to applying function only on one column. You can apply it on the whole DataFrame as well. Let's go straight to the example:</p>
+<div class="highlight"><pre><span></span><span class="c1"># Calculate mean price per day</span>
+<span class="k">def</span> <span class="nf">mean_cost_per_day</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+    <span class="n">mean_cost</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">row</span><span class="o">.</span><span class="n">price_day</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">price_night</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">mean_cost</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;mean_cost_per_day&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">mean_cost_per_day</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p>The main difference lays in the function execution, now it takes each row (or column if you wish) as an input. Later, it calls values in each cells with the use of a particular column name after a dot.
+In the last line, check that instead of calling apply on a single column, we called it this time on the whole DataFrame. We also specified axis parameter and told precisely that we want to use it on columns.</p>
+<hr>
+<h2>Summary</h2>
+<p>In this post, we examined the use of <code>df.apply()</code>. It's Pandas way for row/column iteration for the following reasons:
+It's very fast especially with the growth of your data.
+You can "iterate" on both columns and rows by selecting axis parameter.</p>
+<p>From now on, every time when you think of row iteration, you should consider using df.apply instead:)!
+Happy coding!</p>  </div>
+</article>
+
+    <footer>
+<p>&copy;  2019</p>
+<p>Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a></p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Pythonprogramowanie ",
+  "url" : "",
+  "image": "",
+  "description": ""
+}
+</script>
+
+</body>
+</html>
